@@ -6,6 +6,10 @@
 
 *  Added e2e rolling window example/test for Span Resolver.
 
+*  TFX Transform now outputs data in TFXIO format to avoid multiple conversions.
+   This provides improved performance if statistics generation is enabled or the
+   transformed data is materialized.
+
 ## Breaking Changes
 
 ### For Pipeline Authors
