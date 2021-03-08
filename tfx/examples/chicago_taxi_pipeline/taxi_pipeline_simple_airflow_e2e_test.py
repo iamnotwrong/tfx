@@ -18,10 +18,12 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import platform
 import subprocess
 import tempfile
 import time
 from typing import Sequence, Set, Text
+import unittest
 
 import absl
 import tensorflow as tf
@@ -58,6 +60,9 @@ _SUCCESS_TASK_STATES = set(['success'])
 _PENDING_TASK_STATES = set(['queued', 'scheduled', 'running', 'none'])
 
 
+@unittest.skipIf(
+    platform.system() == 'Darwin',
+    'Airflow does not support executors on macos well. See b/178137745.')
 class AirflowEndToEndTest(tf.test.TestCase):
   """An end to end test using fully orchestrated Airflow."""
 
