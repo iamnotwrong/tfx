@@ -4,8 +4,6 @@
 
 *  Added a simple query based driver that supports Span spec and static_range.
 
-*  Added e2e rolling window example/test for Span Resolver.
-
 ## Breaking Changes
 
 ### For Pipeline Authors
