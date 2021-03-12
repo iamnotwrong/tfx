@@ -26,9 +26,12 @@ import copy
 import absl
 import mock
 import tensorflow as tf
+from tfx import version
 from tfx.types import artifact
 from tfx.types import artifact_utils
 from tfx.types import standard_artifacts
+
+from ml_metadata.proto import metadata_store_pb2
 
 
 class _MyArtifact(artifact.Artifact):
@@ -49,7 +52,7 @@ class ArtifactUtilsTest(tf.test.TestCase):
     self.assertEqual(artifacts[0],
                      artifact_utils.get_single_instance(artifacts))
     self.assertEqual('/tmp/evaluri', artifact_utils.get_single_uri(artifacts))
-    self.assertEqual('/tmp/evaluri/eval',
+    self.assertEqual('/tmp/evaluri/Split-eval',
                      artifact_utils.get_split_uri(artifacts, 'eval'))
     with self.assertRaises(ValueError):
       artifact_utils.get_split_uri(artifacts, 'train')
@@ -65,9 +68,9 @@ class ArtifactUtilsTest(tf.test.TestCase):
 
     self.assertIs(artifact_utils.get_single_instance(artifacts), artifacts[0])
     self.assertEqual('/tmp', artifact_utils.get_single_uri(artifacts))
-    self.assertEqual('/tmp/train',
+    self.assertEqual('/tmp/Split-train',
                      artifact_utils.get_split_uri(artifacts, 'train'))
-    self.assertEqual('/tmp/eval',
+    self.assertEqual('/tmp/Split-eval',
                      artifact_utils.get_split_uri(artifacts, 'eval'))
 
   def testGetFromSplitsMultipleArtifacts(self):
@@ -79,9 +82,37 @@ class ArtifactUtilsTest(tf.test.TestCase):
     artifacts[1].uri = '/tmp2'
     artifacts[1].split_names = artifact_utils.encode_split_names(
         ['train', 'eval'])
+    # When creating new splits, use 'Split-XXX' format.
+    self.assertEqual(['/tmp1/Split-train', '/tmp2/Split-train'],
+                     artifact_utils.get_split_uris(artifacts, 'train'))
+    self.assertEqual(['/tmp1/Split-eval', '/tmp2/Split-eval'],
+                     artifact_utils.get_split_uris(artifacts, 'eval'))
+    # When reading artifacts without version.
+    artifacts[0].mlmd_artifact.state = metadata_store_pb2.Artifact.LIVE
+    artifacts[1].mlmd_artifact.state = metadata_store_pb2.Artifact.LIVE
     self.assertEqual(['/tmp1/train', '/tmp2/train'],
                      artifact_utils.get_split_uris(artifacts, 'train'))
     self.assertEqual(['/tmp1/eval', '/tmp2/eval'],
+                     artifact_utils.get_split_uris(artifacts, 'eval'))
+    # When reading artifacts with old version.
+    artifacts[0].set_string_custom_property(
+        artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY, '0.1')
+    artifacts[1].set_string_custom_property(
+        artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY, '0.1')
+    self.assertEqual(['/tmp1/train', '/tmp2/train'],
+                     artifact_utils.get_split_uris(artifacts, 'train'))
+    self.assertEqual(['/tmp1/eval', '/tmp2/eval'],
+                     artifact_utils.get_split_uris(artifacts, 'eval'))
+    # When reading artifacts with new version.
+    artifacts[0].set_string_custom_property(
+        artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY,
+        version.artifact_split_update_version)
+    artifacts[1].set_string_custom_property(
+        artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY,
+        version.artifact_split_update_version)
+    self.assertEqual(['/tmp1/Split-train', '/tmp2/Split-train'],
+                     artifact_utils.get_split_uris(artifacts, 'train'))
+    self.assertEqual(['/tmp1/Split-eval', '/tmp2/Split-eval'],
                      artifact_utils.get_split_uris(artifacts, 'eval'))
 
   def testArtifactTypeRoundTrip(self):

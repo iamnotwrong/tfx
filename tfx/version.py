@@ -16,3 +16,6 @@
 
 # Note that setup.py uses this version.
 __version__ = '0.29.0.dev'
+
+# TODO(b/182526033): deprecate old artifact payload format.
+artifact_split_update_version = '0.29.0'

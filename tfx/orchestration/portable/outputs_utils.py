@@ -23,6 +23,7 @@ from tfx import types
 from tfx import version
 from tfx.dsl.io import fileio
 from tfx.orchestration import data_types_utils
+from tfx.proto.orchestration import execution_result_pb2
 from tfx.proto.orchestration import pipeline_pb2
 from tfx.types import artifact_utils
 from tfx.types.value_artifact import ValueArtifact
@@ -34,7 +35,6 @@ _STATEFUL_WORKING_DIR = 'stateful_working_dir'
 _DRIVER_OUTPUT_FILE = 'driver_output.pb'
 _EXECUTOR_OUTPUT_FILE = 'executor_output.pb'
 _VALUE_ARTIFACT_FILE_NAME = 'value'
-_ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY = 'tfx_version'
 
 
 def make_output_dirs(output_dict: Dict[Text, List[types.Artifact]]) -> None:
@@ -237,6 +237,20 @@ def tag_output_artifacts_with_version(
   for unused_key, artifact_list in output_artifacts.items():
     for artifact in artifact_list:
       if not artifact.has_custom_property(
-          _ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY):
+          artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY):
         artifact.set_string_custom_property(
-            _ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY, version.__version__)
+            artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY,
+            version.__version__)
+
+
+def tag_executor_output_with_version(
+    executor_output: execution_result_pb2.ExecutorOutput):
+  """Tag output artifacts in ExecutorOutput with the current TFX version."""
+  for unused_key, artifacts in executor_output.output_artifacts.items():
+    for artifact in artifacts.artifacts:
+      if (artifact_utils.ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY not in
+          artifact.custom_properties):
+        artifact.custom_properties[
+            artifact_utils
+            .ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY].string_value = (
+                version.__version__)

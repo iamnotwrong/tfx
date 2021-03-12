@@ -118,11 +118,13 @@ class Executor(base_executor.BaseExecutor):
     tfxio_factory = tfxio_utils.get_tfxio_factory_from_artifact(
         examples=[examples],
         telemetry_descriptors=_TELEMETRY_DESCRIPTORS)
+    print('!!!!!!!!!@@@@@@@@@@@@')
+    print(examples)
     for split in artifact_utils.decode_split_names(examples.split_names):
       if split in exclude_splits:
         continue
 
-      uri = os.path.join(examples.uri, split)
+      uri = artifact_utils.get_split_uri([examples], split)
       split_and_tfxio.append(
           (split, tfxio_factory(io_utils.all_files_pattern(uri))))
     with self._make_beam_pipeline() as p:

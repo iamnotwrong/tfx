@@ -26,10 +26,14 @@ import re
 from typing import Dict, List, Optional, Text, Type
 
 import absl
+from tfx import version
 from tfx.types.artifact import _ArtifactType
 from tfx.types.artifact import Artifact
 
 from ml_metadata.proto import metadata_store_pb2
+
+
+ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY = 'tfx_version'
 
 
 # TODO(ruoyu): Deprecate this function since it is no longer needed.
@@ -101,7 +105,18 @@ def get_split_uris(artifact_list: List[Artifact], split: Text) -> List[Text]:
   for artifact in artifact_list:
     split_names = decode_split_names(artifact.split_names)
     if split in split_names:
-      result.append(os.path.join(artifact.uri, split))
+      if artifact.mlmd_artifact.state != metadata_store_pb2.Artifact.UNKNOWN:
+        # For artifact that resolved from MLMD.
+        if (artifact.get_string_custom_property(
+            ARTIFACT_TFX_VERSION_CUSTOM_PROPERTY_KEY) <
+            version.artifact_split_update_version):
+          # Old version or Without version.
+          result.append(os.path.join(artifact.uri, split))
+        else:
+          result.append(os.path.join(artifact.uri, f'Split-{split}'))
+      else:
+        # For newly generate split, use 'Split-XXX' format.
+        result.append(os.path.join(artifact.uri, f'Split-{split}'))
   if len(result) != len(artifact_list):
     raise ValueError('Split does not exist over all example artifacts: %s' %
                      split)
