@@ -1,8 +1,5 @@
 # Penguin classification Example
 
-**Warning: This code is experimental and is not ready for use. We welcome
-feedback on this example.**
-
 The Penguin classification example introduces the TFX programming
 environment and shows you how to solve a classification problem using
 TFX.
@@ -31,7 +28,7 @@ source ./penguin/bin/activate
 Then, install the dependencies required by the Penguin example:
 
 <pre class="devsite-terminal devsite-click-to-copy">
-pip install tfx==0.26.1 \
+pip install -U tfx \
   numpy==1.16.5 \
   scikit-learn==0.20.4
 </pre>
