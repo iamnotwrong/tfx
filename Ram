@@ -1,0 +1,7 @@
+import tensorflow as tf
+a = tf.constant(3.0,tf.float32)
+b = tf.constant(6.0,tf.float32)
+c = tf.add(a,b)
+alpha = "Hello, world"
+sess = tf.compat.v1.Session(alpha)
+print(sess.run(c))
