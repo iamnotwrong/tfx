@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for tfx.tools.cli.handler.airflow_handler."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import os
@@ -341,10 +336,12 @@ class AirflowHandlerTest(test_case_utils.TfxTest):
     handler = airflow_handler.AirflowHandler(flags_dict)
     with self.captureWritesToStream(sys.stdout) as captured:
       handler.create_run()
-    self.assertIn("['airflow', 'unpause', '" + self.pipeline_name + "']",
-                  captured.contents())
-    self.assertIn("['airflow', 'trigger_dag', '" + self.pipeline_name + "']",
-                  captured.contents())
+    self.assertIn(
+        "['airflow', 'dags', 'unpause', '" + self.pipeline_name + "']",
+        captured.contents())
+    self.assertIn(
+        "['airflow', 'dags', 'trigger', '" + self.pipeline_name + "']",
+        captured.contents())
 
   def testCreateRunNoPipeline(self):
     # Run pipeline without creating one.
@@ -374,8 +371,9 @@ class AirflowHandlerTest(test_case_utils.TfxTest):
     handler = airflow_handler.AirflowHandler(flags_dict)
     with self.captureWritesToStream(sys.stdout) as captured:
       handler.list_runs()
-    self.assertIn("['airflow', 'list_dag_runs', '" + self.pipeline_name + "']",
-                  captured.contents())
+    self.assertIn(
+        "['airflow', 'dags', 'list-runs', '" + self.pipeline_name + "']",
+        captured.contents())
 
   def testListRunsWrongPipeline(self):
     # Run pipeline without creating one.

@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """E2E Airflow tests for CLI."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import codecs
 import locale
@@ -118,7 +113,7 @@ class CliAirflowEndToEndTest(tf.test.TestCase):
     airflow_test_utils.delete_mysql_container(self._mysql_container_name)
 
   def _airflow_initdb(self):
-    _ = subprocess.check_output(['airflow', 'initdb'])
+    _ = subprocess.check_output(['airflow', 'db', 'init'])
 
   def _reload_airflow_dags(self):
     # Created pipelines can be registered to the DB by airflow scheduler
@@ -285,7 +280,7 @@ class CliAirflowEndToEndTest(tf.test.TestCase):
     response = ''
     while pipeline_name not in response:
       response = str(
-          subprocess.check_output(['airflow', 'list_dags', '--report']))
+          subprocess.check_output(['airflow', 'dags', 'list', '--report']))
 
     self._reload_airflow_dags()
 

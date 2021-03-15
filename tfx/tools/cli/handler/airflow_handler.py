@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Handler for Airflow."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import os
@@ -114,10 +109,10 @@ class AirflowHandler(base_handler.BaseHandler):
     self._check_pipeline_existence(pipeline_name)
 
     # Unpause DAG.
-    self._subprocess_call(['airflow', 'unpause', pipeline_name])
+    self._subprocess_call(['airflow', 'dags', 'unpause', pipeline_name])
 
     # Trigger DAG.
-    self._subprocess_call(['airflow', 'trigger_dag', pipeline_name])
+    self._subprocess_call(['airflow', 'dags', 'trigger', pipeline_name])
 
     click.echo('Run created for pipeline: ' + pipeline_name)
 
@@ -137,13 +132,14 @@ class AirflowHandler(base_handler.BaseHandler):
 
     # Get status of all DAG runs.
     dag_runs_list = str(
-        subprocess.check_output(['airflow', 'list_dag_runs', pipeline_name]))
+        subprocess.check_output(['airflow', 'dags', 'list-runs',
+                                 pipeline_name]))
 
     # No runs to display.
     if 'No dag runs for {}'.format(pipeline_name) in dag_runs_list:
       sys.exit('No pipeline runs for {}'.format(pipeline_name))
 
-    self._subprocess_call(['airflow', 'list_dag_runs', pipeline_name])
+    self._subprocess_call(['airflow', 'dags', 'list-runs', pipeline_name])
 
   def get_run(self) -> None:
     """Checks run status in Airflow."""
@@ -154,7 +150,8 @@ class AirflowHandler(base_handler.BaseHandler):
 
     # Get status of all DAG runs.
     dag_runs_list = str(
-        subprocess.check_output(['airflow', 'list_dag_runs', pipeline_name]))
+        subprocess.check_output(['airflow', 'dags', 'list-runs',
+                                 pipeline_name]))
 
     lines = dag_runs_list.split('\\n')
     for line in lines:
